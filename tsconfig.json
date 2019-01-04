@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../packages/display-area" },
+    { "path": "../../packages/editor" },
+    { "path": "../../packages/markdown" },
+    { "path": "../../packages/messaging" },
+    { "path": "../../packages/presentational-components" },
+    { "path": "../../packages/rx-binder" },
+    { "path": "../../packages/rx-jupyter" }
+  ]
+}

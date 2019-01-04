@@ -1,0 +1,47 @@
+{
+  "name": "@nteract/play",
+  "version": "1.6.14",
+  "description": "a playground for execution",
+  "main": "index.js",
+  "repository": "https://github.com/nteract/play",
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Kyle Kelley <rgbkrk@gmail.com>",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "@nteract/display-area": "^5.0.0-alpha.0",
+    "@nteract/editor": "^8.0.0-alpha.0",
+    "@nteract/markdown": "^3.0.1",
+    "@nteract/messaging": "^5.0.0-alpha.0",
+    "@nteract/presentational-components": "^2.0.0-alpha.0",
+    "@zeit/next-typescript": "^1.1.1",
+    "ansi-to-react": "^4.0.0-alpha.0",
+    "deepmerge": "^3.0.0",
+    "lodash": "^4.17.4",
+    "next": "7.0.2",
+    "next-redux-wrapper": "^2.0.0",
+    "object-path": "^0.11.4",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-redux": "^6.0.0",
+    "redux": "^4.0.0",
+    "redux-observable": "^1.0.0",
+    "rx-binder": "^3.0.0-alpha.0",
+    "rx-jupyter": "^4.0.0-alpha.0",
+    "rxjs": "^6.3.3",
+    "styled-components": "^4.1.2",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/next": "^7.0.5",
+    "@types/react": "^16.7.13",
+    "@types/react-dom": "^16.0.11",
+    "typescript": "^3.2.2"
+  }
+}
