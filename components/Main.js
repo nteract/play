@@ -1,15 +1,15 @@
+
 import * as React from "react";
-import styled, { createGlobalStyle } from "styled-components";
 import Head from "next/head";
 import Router from "next/router";
 import CodeMirrorEditor from "@nteract/editor";
-
+// $FlowFixMe
 import { Display } from "@nteract/display-area";
 import { Outputs } from "@nteract/presentational-components";
 import { connect } from "react-redux";
 import objectPath from "object-path";
 
-import { actions } from "../app-redux";
+import { actions } from "../redux";
 import * as utils from "../utils";
 
 import { KernelUI } from "./kernelUI";
@@ -20,116 +20,7 @@ const NTERACT_LOGO_URL =
 
 const emptyList = [];
 
-type Props = {
-  gitref: string;
-  repo: string;
-  source: string;
-  activateServer(param: object): void;
-  serverId: string;
-  setActiveKernel(param: object): void;
-  killKernel(param: object): void;
-  submitBinderForm(param: object): void;
-  currentKernel: any;
-  codeMirrorMode: string;
-  currentKernelName: string;
-  currentServer: any;
-  platform: string;
-  showPanel: boolean;
-  setShowPanel(showPanel: boolean): void;
-  runSource(param: object): void;
-  restartKernel(param: object): void;
-  currentServerId: string;
-};
-
-type State = {
-  gitrefValue: string;
-  repoValue: string;
-  sourceValue: string;
-};
-
-const PlayEditor = styled.div`
-  --editor-width: 52%;
-  width: var(--editor-width);
-  position: absolute;
-  left: 0;
-  height: 100%;
-
-  .CodeMirror {
-    height: 100%;
-  }
-
-  & > div {
-    height: 100%;
-  }
-`;
-
-const PlayOutputs = styled.div`
-  --editor-width: 52%;
-  width: calc(100% - var(--editor-width));
-  position: absolute;
-  right: 0;
-  height: 100%;
-`;
-
-const Header = styled.header`
-  --header-height: 42px;
-
-  display: flex;
-  justify-content: space-between;
-  background-color: black;
-
-  & img {
-    height: calc(var(--header-height) - 16px);
-    width: 80px;
-    margin-left: 10px;
-    padding: 0px 20px 0px 10px;
-  }
-
-  & img,
-  button,
-  div {
-    vertical-align: middle;
-  }
-
-  & button {
-    padding: 0px 16px;
-    border: none;
-    outline: none;
-    border-radius: unset;
-    background-color: rgba(0, 0, 0, 0);
-    color: white;
-    height: var(--header-height);
-    font-family: Monaco, monospace;
-  }
-
-  & button:disabled {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.1);
-  }
-
-  & button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #d7d7d7;
-  }
-
-  & button:active,
-  button:focus {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`;
-
-const BodyStyle = createGlobalStyle`
-  body {
-    margin: 0;
-    height: 100%;
-    font-family: Monaco, monospace;
-  }
-  .CodeMirror {
-    height: 100%;
-  }  
-`;
-
-class Main extends React.Component<Props, State> {
+class Main extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -244,8 +135,8 @@ class Main extends React.Component<Props, State> {
           />
           <title>nteract play: Run interactive code</title>
         </Head>
-        <Header>
-          <div>
+        <header>
+          <div className="left">
             <img
               src={NTERACT_LOGO_URL}
               alt="nteract logo"
@@ -277,7 +168,7 @@ class Main extends React.Component<Props, State> {
               onChange={this.handleKernelChange}
             />
           ) : null}
-        </Header>
+        </header>
 
         {showPanel ? (
           <BinderConsole
@@ -294,8 +185,10 @@ class Main extends React.Component<Props, State> {
           />
         ) : null}
 
-        <PlayEditor>
+        <div className="play-editor">
           <CodeMirrorEditor
+            // TODO: these should have defaultProps on the codemirror editor
+            cellFocused
             editorFocused
             channels={
               currentKernel && currentKernel.channel
@@ -305,6 +198,10 @@ class Main extends React.Component<Props, State> {
             tip
             completion
             theme="light"
+            // TODO: This is the notebook implementation leaking into the editor
+            //       component. It shouldn't be here, I won't refactor it as part
+            //       of the current play PR though.
+            id="not-really-a-cell"
             onFocusChange={() => {}}
             focusAbove={() => {}}
             focusBelow={() => {}}
@@ -328,11 +225,10 @@ class Main extends React.Component<Props, State> {
             }}
             value={sourceValue}
             onChange={this.handleEditorChange}
-            style={{ height: "100%" }}
           />
-        </PlayEditor>
+        </div>
 
-        <PlayOutputs>
+        <div className="play-outputs">
           <Outputs>
             <Display
               outputs={
@@ -343,8 +239,91 @@ class Main extends React.Component<Props, State> {
               expanded
             />
           </Outputs>
-        </PlayOutputs>
-        <BodyStyle />
+        </div>
+
+        <style jsx>{`
+          --header-height: 42px;
+          --editor-width: 52%;
+
+          header {
+            display: flex;
+            justify-content: space-between;
+            background-color: black;
+          }
+
+          header img {
+            height: calc(var(--header-height) - 16px);
+            width: 80px;
+            margin-left: 10px;
+            padding: 0px 20px 0px 10px;
+          }
+
+          header img,
+          header button,
+          header div {
+            vertical-align: middle;
+          }
+
+          header button {
+            padding: 0px 16px;
+            border: none;
+            outline: none;
+            border-radius: unset;
+            background-color: rgba(0, 0, 0, 0);
+            color: white;
+            height: var(--header-height);
+            font-family: Monaco, monospace;
+          }
+
+          header button:active,
+          header button:focus {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+
+          header button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #d7d7d7;
+          }
+
+          header button:disabled {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.1);
+          }
+
+          .play-editor {
+            width: var(--editor-width);
+            position: absolute;
+            left: 0;
+            height: 100%;
+          }
+
+          .play-editor :global(.CodeMirror) {
+            height: 100%;
+          }
+
+          .play-outputs {
+            width: calc(100% - var(--editor-width));
+            position: absolute;
+            right: 0;
+          }
+
+          .play-outputs :global(*) {
+            font-family: Monaco, monospace;
+          }
+
+          .play-editor > :global(*) {
+            height: 100%;
+          }
+          :global(.CodeMirror) {
+            height: 100%;
+          }
+        `}</style>
+
+        <style jsx global>{`
+          body {
+            margin: 0;
+          }
+        `}</style>
       </React.Fragment>
     );
   }

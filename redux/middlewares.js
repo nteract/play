@@ -1,15 +1,9 @@
 // extracted from core middlewares in a dependency reduced version
-import { Dispatch, Store } from "redux";
 
-type ErrorAction = {
-  type: string;
-  error?: boolean;
-  payload?: any;
-};
-
-export const errorMiddleware = (_store: Store, console = global.console) => (
-  next: Dispatch
-) => (action: ErrorAction) => {
+export const errorMiddleware = (
+  store,
+  console = global.console
+) => next => action => {
   if (!(action.type.includes("ERROR") || action.error)) {
     return next(action);
   }

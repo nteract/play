@@ -2,7 +2,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 
 import Main from "../components/Main";
-import { actions } from "../app-redux";
+import { actions } from "../redux";
 
 function detectPlatform(req) {
   if (req && req.headers) {
