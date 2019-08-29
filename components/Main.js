@@ -1,9 +1,8 @@
-
 import * as React from "react";
 import Head from "next/head";
 import Router from "next/router";
 import CodeMirrorEditor from "@nteract/editor";
-// $FlowFixMe
+
 import { Display } from "@nteract/display-area";
 import { Outputs } from "@nteract/presentational-components";
 import { connect } from "react-redux";
@@ -15,10 +14,77 @@ import * as utils from "../utils";
 import { KernelUI } from "./kernelUI";
 import { BinderConsole } from "./consoles";
 
+import styled from "styled-components";
+
 const NTERACT_LOGO_URL =
   "https://media.githubusercontent.com/media/nteract/logos/master/nteract_logo_cube_book/exports/images/svg/nteract_logo_wide_purple_inverted.svg";
 
 const emptyList = [];
+
+const Header = styled.header`
+  --header-height: 42px;
+
+  display: flex;
+  justify-content: space-between;
+  background-color: black;
+
+  img {
+    height: calc(var(--header-height) - 16px);
+    width: 80px;
+    margin-left: 10px;
+    padding: 0px 20px 0px 10px;
+  }
+
+  img,
+  button,
+  div {
+    vertical-align: middle;
+  }
+
+  button {
+    padding: 0px 16px;
+    border: none;
+    outline: none;
+    border-radius: unset;
+    background-color: rgba(0, 0, 0, 0);
+    color: white;
+    height: var(--header-height);
+    font-family: Monaco, monospace;
+  }
+
+  button:active,
+  button:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #d7d7d7;
+  }
+
+  button:disabled {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const PlayEditor = styled.div`
+  --editor-width: 52%;
+
+  width: var(--editor-width);
+  position: absolute;
+  left: 0;
+  height: 100%;
+  height: 100%;
+`;
+
+const PlayOutputs = styled.div`
+  --editor-width: 52%;
+
+  width: calc(100% - var(--editor-width));
+  position: absolute;
+  right: 0;
+`;
 
 class Main extends React.Component {
   constructor(props) {
@@ -135,7 +201,7 @@ class Main extends React.Component {
           />
           <title>nteract play: Run interactive code</title>
         </Head>
-        <header>
+        <Header>
           <div className="left">
             <img
               src={NTERACT_LOGO_URL}
@@ -168,7 +234,7 @@ class Main extends React.Component {
               onChange={this.handleKernelChange}
             />
           ) : null}
-        </header>
+        </Header>
 
         {showPanel ? (
           <BinderConsole
@@ -185,7 +251,7 @@ class Main extends React.Component {
           />
         ) : null}
 
-        <div className="play-editor">
+        <PlayEditor>
           <CodeMirrorEditor
             // TODO: these should have defaultProps on the codemirror editor
             cellFocused
@@ -226,9 +292,9 @@ class Main extends React.Component {
             value={sourceValue}
             onChange={this.handleEditorChange}
           />
-        </div>
+        </PlayEditor>
 
-        <div className="play-outputs">
+        <PlayOutputs>
           <Outputs>
             <Display
               outputs={
@@ -239,91 +305,7 @@ class Main extends React.Component {
               expanded
             />
           </Outputs>
-        </div>
-
-        <style jsx>{`
-          --header-height: 42px;
-          --editor-width: 52%;
-
-          header {
-            display: flex;
-            justify-content: space-between;
-            background-color: black;
-          }
-
-          header img {
-            height: calc(var(--header-height) - 16px);
-            width: 80px;
-            margin-left: 10px;
-            padding: 0px 20px 0px 10px;
-          }
-
-          header img,
-          header button,
-          header div {
-            vertical-align: middle;
-          }
-
-          header button {
-            padding: 0px 16px;
-            border: none;
-            outline: none;
-            border-radius: unset;
-            background-color: rgba(0, 0, 0, 0);
-            color: white;
-            height: var(--header-height);
-            font-family: Monaco, monospace;
-          }
-
-          header button:active,
-          header button:focus {
-            background-color: rgba(255, 255, 255, 0.1);
-          }
-
-          header button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #d7d7d7;
-          }
-
-          header button:disabled {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.1);
-          }
-
-          .play-editor {
-            width: var(--editor-width);
-            position: absolute;
-            left: 0;
-            height: 100%;
-          }
-
-          .play-editor :global(.CodeMirror) {
-            height: 100%;
-          }
-
-          .play-outputs {
-            width: calc(100% - var(--editor-width));
-            position: absolute;
-            right: 0;
-          }
-
-          .play-outputs :global(*) {
-            font-family: Monaco, monospace;
-          }
-
-          .play-editor > :global(*) {
-            height: 100%;
-          }
-          :global(.CodeMirror) {
-            height: 100%;
-          }
-        `}</style>
-
-        <style jsx global>{`
-          body {
-            margin: 0;
-          }
-        `}</style>
+        </PlayOutputs>
       </React.Fragment>
     );
   }

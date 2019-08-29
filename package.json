@@ -25,7 +25,7 @@
     "ansi-to-react": "^4.0.0-alpha.0",
     "deepmerge": "^3.0.0",
     "lodash": "^4.17.4",
-    "next": "^7.0.3",
+    "next": "^9.0.5",
     "next-redux-wrapper": "^2.0.0",
     "object-path": "^0.11.4",
     "react": "^16.3.2",
@@ -36,6 +36,10 @@
     "rx-binder": "^3.0.0-alpha.0",
     "rx-jupyter": "^4.0.0-alpha.0",
     "rxjs": "^6.3.3",
+    "styled-components": "^4.3.2",
     "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "babel-plugin-styled-components": "^1.10.6"
   }
 }
