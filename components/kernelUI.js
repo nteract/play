@@ -54,6 +54,7 @@ const KernelInfo = styled.div`
 
 const KernelStatus = styled.div`
   color: #888;
+  display: inline-block;
 `;
 
 const StyledSelector = styled.div`

@@ -1,7 +1,10 @@
 import * as React from "react";
 import Head from "next/head";
 import Router from "next/router";
-import CodeMirrorEditor from "@nteract/editor";
+import dynamic from "next/dynamic";
+const CodeMirrorEditor = dynamic(import("@nteract/editor"), {
+  ssr: false
+});
 
 import { Display } from "@nteract/display-area";
 import { Outputs } from "@nteract/presentational-components";
@@ -347,7 +350,4 @@ const mapDispatchToProps = {
   setActiveKernel: actions.setActiveKernel
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Main);
+export default connect(mapStateToProps, mapDispatchToProps)(Main);

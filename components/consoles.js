@@ -29,6 +29,8 @@ class BinderLogo extends React.Component {
 }
 
 const StyledFieldset = styled.fieldset`
+  border: 0;
+
   input {
     font-family: inherit;
     font-size: inherit;
