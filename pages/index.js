@@ -4,6 +4,18 @@ import { connect } from "react-redux";
 import Main from "../components/Main";
 import { actions } from "../redux";
 
+import "codemirror/addon/hint/show-hint.css";
+import "codemirror/lib/codemirror.css";
+import "@nteract/styles/editor-overrides.css";
+
+import { createGlobalStyle } from "styled-components";
+
+const Container = createGlobalStyle`
+  body {
+    margin: 0px;
+  }
+`;
+
 function detectPlatform(req) {
   if (req && req.headers) {
     // Server side
@@ -36,7 +48,12 @@ class Page extends React.Component {
     store.dispatch(actions.initalizeFromQuery(query));
   }
   render() {
-    return <Main />;
+    return (
+      <React.Fragment>
+        <Main />
+        <Container />
+      </React.Fragment>
+    );
   }
 }
 

@@ -1,5 +1,6 @@
-
 import * as React from "react";
+
+import styled from "styled-components";
 
 class KernelOption extends React.Component {
   render() {
@@ -8,11 +9,19 @@ class KernelOption extends React.Component {
   }
 }
 
+const Form = styled.form`
+  label,
+  select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+`;
+
 class KernelSelector extends React.Component {
   render() {
     const { kernelspecs, currentKernel, onChange } = this.props;
     return (
-      <form>
+      <Form>
         <select
           value={currentKernel}
           onBlur={onChange}
@@ -23,58 +32,52 @@ class KernelSelector extends React.Component {
             return <KernelOption kernelName={kernelName} key={kernelName} />;
           })}
         </select>
-        <style jsx>
-          {`
-            form label,
-            form select {
-              font-family: inherit;
-              font-size: inherit;
-            }
-          `}
-        </style>
-      </form>
+      </Form>
     );
   }
 }
+
+const KernelData = styled.div`
+  font-family: Monaco, monospace;
+  font-size: 12px;
+`;
+
+const KernelInfo = styled.div`
+  color: #f1f1f1;
+  line-height: var(--header-height);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  vertical-align: middle;
+  display: table-cell;
+  padding-right: 20px;
+`;
+
+const KernelStatus = styled.div`
+  color: #888;
+  display: inline-block;
+`;
+
+const StyledSelector = styled.div`
+  display: table-cell;
+  vertical-align: middle;
+  padding-right: 10px;
+  font-family: inherit;
+  font-size: inherit;
+`;
 
 export class KernelUI extends React.Component {
   render() {
     const { status, ...otherprops } = this.props; // eslint-disable-line no-unused-vars
     return (
-      <div className="kernel-data">
-        <div className="kernelSelector">
+      <KernelData>
+        <StyledSelector>
           <KernelSelector {...otherprops} />
-        </div>
-        <div className="kernelInfo">
-          <span className="kernelStatus">Runtime: </span>
+        </StyledSelector>
+        <KernelInfo>
+          <KernelStatus>Runtime: </KernelStatus>
           {this.props.status}
-        </div>
-        <style jsx>{`
-          .kernelInfo {
-            color: #f1f1f1;
-            line-height: var(--header-height);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            vertical-align: middle;
-            display: table-cell;
-            padding-right: 20px;
-          }
-          .kernel-data {
-            font-family: Monaco, monospace;
-            font-size: 12px;
-          }
-          .kernelStatus {
-            color: #888;
-          }
-          .kernelSelector {
-            display: table-cell;
-            vertical-align: middle;
-            padding-right: 10px;
-            font-family: inherit;
-            font-size: inherit;
-          }
-        `}</style>
-      </div>
+        </KernelInfo>
+      </KernelData>
     );
   }
 }

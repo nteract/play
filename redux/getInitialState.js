@@ -1,7 +1,6 @@
-
 const getInitialState = () => ({
   ui: {
-    repo: "binder-examples/jupyter-stacks",
+    repo: "nteract/examples",
     gitref: "master",
     source: `from vdom import h1, p, img, div, span
 
@@ -24,7 +23,7 @@ div(h1('Welcome to ', fancy('play'), '!'),
           style=dict(color="white", backgroundColor="black", padding="10px")),
       ' Up above'))
 `,
-    showPanel: false,
+    showPanel: true,
     currentServerId: "",
     currentKernelName: "",
     platform: ""
