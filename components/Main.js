@@ -266,7 +266,6 @@ class Main extends React.Component {
             }
             tip
             completion
-            theme="light"
             // TODO: This is the notebook implementation leaking into the editor
             //       component. It shouldn't be here, I won't refactor it as part
             //       of the current play PR though.
