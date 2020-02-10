@@ -36,7 +36,9 @@ Here are the steps given below to step up the development environment:
 
 1. Fork this repo.
 2. Clone the fork to your system. `git clone https://github.com/YOUR-USERNAME/play`.
-3. You can use either `yarn` or `npm` as your package manager.
+3. You can use either `yarn install` or `npm install`.
+4. To start the dev server `npm run dev` or `yarn dev`.
+5. To build the application `npm run build` or `yarn build`.
 
 ## Community
 
@@ -56,5 +58,5 @@ Here are the steps given below to step up the development environment:
  > If you are new to open-source, make sure to check read more about it [here](https://www.digitalocean.com/community/tutorial_series/an-introduction-to-open-source) and learn more about creating a pull request [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-pull-request-on-github).
 
 ##  License
-TBD
+[BSD-3-Clause](https://choosealicense.com/licenses/bsd-3-clause/)
 
