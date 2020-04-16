@@ -1,6 +1,6 @@
 import * as React from "react";
 import Head from "next/head";
-import Router from "next/router";
+import Router, { withRouter } from "next/router";
 import dynamic from "next/dynamic";
 const CodeMirrorEditor = dynamic(import("@nteract/editor"), {
   ssr: false
@@ -93,10 +93,16 @@ class Main extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      gitrefValue: props.gitref,
-      repoValue: props.repo,
-      sourceValue: props.source
+      gitrefValue: props.router.query.gitref || props.gitref,
+      repoValue: props.router.query.repo || props.repo,
+      sourceValue: props.source,
     };
+    if (props.router.query.gitref || props.router.query.repo) {
+      props.initalizeFromQuery({
+        gitref: props.router.query.gitref,
+        repo: props.router.query.repo,
+      });
+    }
   }
   componentDidMount() {
     const { activateServer } = this.props;
@@ -313,7 +319,7 @@ class Main extends React.Component {
   }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, ownProps) => {
   return {
     repo: state.ui.repo,
     gitref: state.ui.gitref,
@@ -337,7 +343,8 @@ const mapStateToProps = state => {
       "serversById",
       state.ui.currentServerId,
       "server"
-    ])
+    ]),
+    ...ownProps
   };
 };
 
@@ -346,7 +353,8 @@ const mapDispatchToProps = {
   submitBinderForm: actions.submitBinderForm,
   setShowPanel: actions.setShowPanel,
   runSource: actions.runSource,
-  setActiveKernel: actions.setActiveKernel
+  setActiveKernel: actions.setActiveKernel,
+  initalizeFromQuery:actions.initalizeFromQuery
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Main);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Main));
