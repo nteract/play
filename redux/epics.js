@@ -253,7 +253,7 @@ const fetchFilesEpic = (action$, state$) =>
       const endpoint = `https://api.github.com/repos/${repo}/contents/${path}?ref=${gitref}`;
       return ajax(endpoint).pipe(
         map((res) => {
-          console.log(res.response);
+          console.table(res.response);
           return actions.fetchFilesFulfilled(res.response);
         }),
       );

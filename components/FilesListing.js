@@ -67,8 +67,6 @@ class FilesListing extends React.Component {
       setPath(path +"/"+ e.target.innerText)
     if(filetype == "file")
       fetchSource({ gitref, repo, path ,fileName})
-    console.log(filetype)
-    console.log(path)
   };
 
   componentDidMount() {
