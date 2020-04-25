@@ -156,3 +156,23 @@ export const initalizeFromQuery = (payload = {}) => ({
   type: actionTypes.INITIALIZE_FROM_QUERY,
   payload
 });
+
+export const fetchSource = (payload) => ({
+  type: actionTypes.FETCH_SOURCE,
+  payload,
+});
+
+export const fetchFiles = (payload) => ({
+  type: actionTypes.FETCH_FILES,
+  payload,
+});
+
+export const fetchFilesFulfilled = (payload) => ({
+  type: actionTypes.FETCH_FILES_FULFILLED,
+  payload,
+});
+
+export const setPath = (payload) => ({
+  type: actionTypes.SET_PATH,
+  payload,
+});

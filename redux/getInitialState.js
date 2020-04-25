@@ -2,6 +2,8 @@ const getInitialState = () => ({
   ui: {
     repo: "nteract/examples",
     gitref: "master",
+    path:"",
+    files:[],
     source: `from vdom import h1, p, img, div, span
 
 def fancy(word):

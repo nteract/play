@@ -3,7 +3,7 @@ import Head from "next/head";
 import Router, { withRouter } from "next/router";
 import dynamic from "next/dynamic";
 const CodeMirrorEditor = dynamic(import("@nteract/editor"), {
-  ssr: false
+  ssr: false,
 });
 
 import { Display } from "@nteract/display-area";
@@ -16,7 +16,7 @@ import * as utils from "../utils";
 
 import { KernelUI } from "./kernelUI";
 import { BinderConsole } from "./consoles";
-
+import FilesListing from "./FilesListing";
 import styled from "styled-components";
 
 const NTERACT_LOGO_URL =
@@ -24,21 +24,27 @@ const NTERACT_LOGO_URL =
 
 const emptyList = [];
 
+const Layout = styled.div`
+  min-height: calc(100vh);
+  display: grid;
+  grid-template-rows: 45px auto 1fr;
+  grid-template-columns: 1fr 3fr 3fr;
+  grid-row-gap: 00px;
+  grid-column-gap: 0px;
+  grid-template-areas:
+    "side header header"
+    "side Console Console"
+    "side PlayEditor PlayOutputs";
+  font-size: 14px;
+`;
+
 const Header = styled.header`
   --header-height: 42px;
-
   display: flex;
   justify-content: space-between;
   background-color: black;
+  grid-area: header;
 
-  img {
-    height: calc(var(--header-height) - 16px);
-    width: 80px;
-    margin-left: 10px;
-    padding: 0px 20px 0px 10px;
-  }
-
-  img,
   button,
   div {
     vertical-align: middle;
@@ -72,21 +78,37 @@ const Header = styled.header`
 `;
 
 const PlayEditor = styled.div`
-  --editor-width: 52%;
-
-  width: var(--editor-width);
+  grid-area: PlayEditor;
   position: absolute;
-  left: 0;
-  height: 100%;
-  height: 100%;
+  width: 42%;
+  height: auto;
 `;
 
 const PlayOutputs = styled.div`
-  --editor-width: 52%;
-
-  width: calc(100% - var(--editor-width));
+  grid-area: PlayOutputs;
   position: absolute;
-  right: 0;
+  right: 0px;
+  width: 44%;
+  height: auto;
+`;
+const Body = styled.div``;
+
+const Console = styled.div`
+  grid-area: Console;
+  min-height: 0px;
+`;
+
+const Side = styled.div`
+  grid-area: side;
+  background-color: black;
+  min-height: 50px;
+  color: #fff;
+  .nteract-logo {
+    width: 90px;
+    display: block;
+    margin: auto;
+    margin-top: 5px;
+  }
 `;
 
 class Main extends React.Component {
@@ -96,6 +118,7 @@ class Main extends React.Component {
       gitrefValue: props.router.query.gitref || props.gitref,
       repoValue: props.router.query.repo || props.repo,
       sourceValue: props.source,
+      path: props.path,
     };
     if (props.router.query.gitref || props.router.query.repo) {
       props.initalizeFromQuery({
@@ -105,10 +128,11 @@ class Main extends React.Component {
     }
   }
   componentDidMount() {
-    const { activateServer } = this.props;
-    const { gitrefValue: gitref, repoValue: repo } = this.state;
+    const { activateServer, fetchFiles } = this.props;
+    const { gitrefValue: gitref, repoValue: repo, path } = this.state;
     const serverId = utils.makeServerId({ gitref, repo });
     activateServer({ serverId, repo, gitref });
+    fetchFiles({ repo, gitref, path });
   }
 
   componentDidUpdate(prevProps) {
@@ -117,12 +141,15 @@ class Main extends React.Component {
       this.props.gitref !== prevProps.gitref ||
       this.props.repo !== prevProps.repo
     ) {
+      let { gitref, repo, path } = this.props;
+      this.props.fetchFiles({ repo, gitref, path });
+
       const newLocation = {
         pathname: Router.pathname,
         query: {
           gitref: this.props.gitref,
-          repo: this.props.repo
-        }
+          repo: this.props.repo,
+        },
       };
 
       Router.push(
@@ -136,34 +163,39 @@ class Main extends React.Component {
         // While still providing something that is copy-pastable in the URL bar
       );
     }
+    if (this.props.source !== this.state.sourceValue) {
+      this.setState({
+        sourceValue: this.props.source,
+      });
+    }
   }
 
-  handleEditorChange = source => {
+  handleEditorChange = (source) => {
     this.setState({ sourceValue: source });
   };
-  handleRepoChange = event => {
+  handleRepoChange = (event) => {
     this.setState({ repoValue: event.target.value });
   };
-  handleGitrefChange = event => {
+  handleGitrefChange = (event) => {
     this.setState({ gitrefValue: event.target.value });
   };
-  handleKernelChange = event => {
+  handleKernelChange = (event) => {
     const { currentServerId: serverId, setActiveKernel } = this.props;
     setActiveKernel({ serverId, kernelName: event.target.value });
   };
-  killKernel = kernelName => {
+  killKernel = (kernelName) => {
     const { serverId, killKernel } = this.props;
     killKernel({ serverId, kernelName });
   };
-  restartKernel = kernelName => {
+  restartKernel = (kernelName) => {
     const { serverId, restartKernel } = this.props;
     restartKernel({ serverId, kernelName });
   };
-  handleFormSubmit = event => {
+  handleFormSubmit = (event) => {
     const {
       currentServerId: oldServerId,
       activateServer,
-      submitBinderForm
+      submitBinderForm,
     } = this.props;
     const { gitrefValue: gitref, repoValue: repo } = this.state;
     event.preventDefault();
@@ -178,7 +210,7 @@ class Main extends React.Component {
     runSource({
       serverId: currentServerId,
       kernelName: currentKernelName,
-      source
+      source,
     });
   };
   render() {
@@ -189,132 +221,143 @@ class Main extends React.Component {
       currentServer,
       platform,
       showPanel,
-      setShowPanel
+      setShowPanel,
     } = this.props;
     const { repoValue, gitrefValue, sourceValue } = this.state;
     return (
-      <React.Fragment>
-        <Head>
-          <link rel="dns-prefetch" href="https://mybinder.org" />
-          <link
-            rel="prefetch"
-            href="https://mybinder.org/static/logo.svg?v=f9f0d927b67cc9dc99d788c822ca21c0"
-          />
-          {/*
+      <div>
+        <Layout>
+          <Head>
+            <link rel="dns-prefetch" href="https://mybinder.org" />
+            <link
+              rel="prefetch"
+              href="https://mybinder.org/static/logo.svg?v=f9f0d927b67cc9dc99d788c822ca21c0"
+            />
+            {/*
             prefetch our little sample graphic for an extra touch of ✨
           */}
-          <link rel="prefetch" href="https://bit.ly/storybot-vdom" />
-          <link
-            rel="prefetch"
-            href="https://media.giphy.com/media/xUPGcguWZHRC2HyBRS/giphy.gif"
-          />
-          <title>nteract play: Run interactive code</title>
-        </Head>
-        <Header>
-          <div className="left">
+            <link rel="prefetch" href="https://bit.ly/storybot-vdom" />
+            <link
+              rel="prefetch"
+              href="https://media.giphy.com/media/xUPGcguWZHRC2HyBRS/giphy.gif"
+            />
+            <title>nteract play: Run interactive code</title>
+          </Head>
+          <Header>
+            <div className="left">
+              <button
+                onClick={this.handleSourceSubmit}
+                className="play"
+                disabled={!currentKernel}
+                title={`run cell (${platform === "macOS" ? "⌘-" : "Ctrl-"}⏎)`}
+              >
+                ▶ Run
+              </button>
+              <button onClick={() => setShowPanel(!showPanel)}>
+                {showPanel ? "Hide" : "Show"} logs
+              </button>
+            </div>
+            {currentServer && currentKernel ? (
+              <KernelUI
+                status={currentKernel.status}
+                kernelspecs={
+                  currentServer.kernelSpecs &&
+                  currentServer.kernelSpecs.kernelSpecByKernelName
+                    ? currentServer.kernelSpecs.kernelSpecByKernelName
+                    : {}
+                }
+                currentKernel={currentKernelName}
+                onChange={this.handleKernelChange}
+                gitref={this.state.gitrefValue}
+              />
+            ) : null}
+          </Header>
+          <Console>
+            {showPanel ? (
+              <BinderConsole
+                onGitrefChange={this.handleGitrefChange}
+                onRepoChange={this.handleRepoChange}
+                onFormSubmit={this.handleFormSubmit}
+                logs={
+                  currentServer && currentServer.messages
+                    ? currentServer.messages
+                    : emptyList
+                }
+                repo={repoValue}
+                gitref={gitrefValue}
+              />
+            ) : null}
+          </Console>
+          <Side>
             <img
               src={NTERACT_LOGO_URL}
               alt="nteract logo"
               className="nteract-logo"
             />
+            <FilesListing
+              org={this.state.org}
+              repo={this.state.repo}
+              gitRef={this.state.gitRef}
+            ></FilesListing>
+          </Side>
+          <Body>
+            <PlayEditor>
+              <CodeMirrorEditor
+                // TODO: these should have defaultProps on the codemirror editor
+                cellFocused
+                editorFocused
+                channels={
+                  currentKernel && currentKernel.channel
+                    ? currentKernel.channel
+                    : null
+                }
+                tip
+                completion
+                // TODO: This is the notebook implementation leaking into the editor
+                //       component. It shouldn't be here, I won't refactor it as part
+                //       of the current play PR though.
+                id="not-really-a-cell"
+                onFocusChange={() => {}}
+                focusAbove={() => {}}
+                focusBelow={() => {}}
+                // END TODO for notebook leakage
+                // TODO: kernelStatus should be allowed to be null or undefined,
+                //       resulting in thought of as either idle or not connected by
+                //       default. This is primarily used for determining if code
+                //       completion should be enabled
+                kernelStatus={
+                  currentKernel ? currentKernel.status : "not connected"
+                }
+                options={{
+                  lineNumbers: true,
+                  extraKeys: {
+                    "Ctrl-Space": "autocomplete",
+                    "Ctrl-Enter": this.handleSourceSubmit,
+                    "Cmd-Enter": this.handleSourceSubmit,
+                  },
+                  cursorBlinkRate: 0,
+                  mode: codeMirrorMode,
+                }}
+                value={sourceValue}
+                onChange={this.handleEditorChange}
+              />
+            </PlayEditor>
 
-            <button
-              onClick={this.handleSourceSubmit}
-              className="play"
-              disabled={!currentKernel}
-              title={`run cell (${platform === "macOS" ? "⌘-" : "Ctrl-"}⏎)`}
-            >
-              ▶ Run
-            </button>
-            <button onClick={() => setShowPanel(!showPanel)}>
-              {showPanel ? "Hide" : "Show"} logs
-            </button>
-          </div>
-          {currentServer && currentKernel ? (
-            <KernelUI
-              status={currentKernel.status}
-              kernelspecs={
-                currentServer.kernelSpecs &&
-                currentServer.kernelSpecs.kernelSpecByKernelName
-                  ? currentServer.kernelSpecs.kernelSpecByKernelName
-                  : {}
-              }
-              currentKernel={currentKernelName}
-              onChange={this.handleKernelChange}
-            />
-          ) : null}
-        </Header>
-
-        {showPanel ? (
-          <BinderConsole
-            onGitrefChange={this.handleGitrefChange}
-            onRepoChange={this.handleRepoChange}
-            onFormSubmit={this.handleFormSubmit}
-            logs={
-              currentServer && currentServer.messages
-                ? currentServer.messages
-                : emptyList
-            }
-            repo={repoValue}
-            gitref={gitrefValue}
-          />
-        ) : null}
-
-        <PlayEditor>
-          <CodeMirrorEditor
-            // TODO: these should have defaultProps on the codemirror editor
-            cellFocused
-            editorFocused
-            channels={
-              currentKernel && currentKernel.channel
-                ? currentKernel.channel
-                : null
-            }
-            tip
-            completion
-            // TODO: This is the notebook implementation leaking into the editor
-            //       component. It shouldn't be here, I won't refactor it as part
-            //       of the current play PR though.
-            id="not-really-a-cell"
-            onFocusChange={() => {}}
-            focusAbove={() => {}}
-            focusBelow={() => {}}
-            // END TODO for notebook leakage
-            // TODO: kernelStatus should be allowed to be null or undefined,
-            //       resulting in thought of as either idle or not connected by
-            //       default. This is primarily used for determining if code
-            //       completion should be enabled
-            kernelStatus={
-              currentKernel ? currentKernel.status : "not connected"
-            }
-            options={{
-              lineNumbers: true,
-              extraKeys: {
-                "Ctrl-Space": "autocomplete",
-                "Ctrl-Enter": this.handleSourceSubmit,
-                "Cmd-Enter": this.handleSourceSubmit
-              },
-              cursorBlinkRate: 0,
-              mode: codeMirrorMode
-            }}
-            value={sourceValue}
-            onChange={this.handleEditorChange}
-          />
-        </PlayEditor>
-
-        <PlayOutputs>
-          <Outputs>
-            <Display
-              outputs={
-                currentKernel && currentKernel.outputs
-                  ? currentKernel.outputs
-                  : emptyList
-              }
-              expanded
-            />
-          </Outputs>
-        </PlayOutputs>
-      </React.Fragment>
+            <PlayOutputs>
+              <Outputs>
+                <Display
+                  outputs={
+                    currentKernel && currentKernel.outputs
+                      ? currentKernel.outputs
+                      : emptyList
+                  }
+                  expanded
+                />
+              </Outputs>
+            </PlayOutputs>
+          </Body>
+        </Layout>
+      </div>
     );
   }
 }
@@ -324,6 +367,7 @@ const mapStateToProps = (state, ownProps) => {
     repo: state.ui.repo,
     gitref: state.ui.gitref,
     source: state.ui.source,
+    path: state.ui.path,
     platform: state.ui.platform,
     showPanel: state.ui.showPanel,
     currentServerId: state.ui.currentServerId,
@@ -336,15 +380,15 @@ const mapStateToProps = (state, ownProps) => {
       "server",
       "activeKernelsByName",
       state.ui.currentKernelName,
-      "kernel"
+      "kernel",
     ]),
     currentServer: objectPath.get(state, [
       "entities",
       "serversById",
       state.ui.currentServerId,
-      "server"
+      "server",
     ]),
-    ...ownProps
+    ...ownProps,
   };
 };
 
@@ -354,7 +398,8 @@ const mapDispatchToProps = {
   setShowPanel: actions.setShowPanel,
   runSource: actions.runSource,
   setActiveKernel: actions.setActiveKernel,
-  initalizeFromQuery:actions.initalizeFromQuery
+  initalizeFromQuery: actions.initalizeFromQuery,
+  fetchFiles: actions.fetchFiles,
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Main));

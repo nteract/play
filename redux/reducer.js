@@ -46,6 +46,34 @@ const source = (state = "", action) => {
     case actionTypes.SET_SOURCE: {
       return action.payload;
     }
+    case actionTypes.FETCH_SOURCE:{
+      return state;
+    }
+    default: {
+      return state;
+    }
+  }
+};
+
+const files = (state = "", action) => {
+  switch (action.type) {
+    case actionTypes.FETCH_FILES: {
+      return state;
+    }
+    case actionTypes.FETCH_FILES_FULFILLED: {
+      return action.payload
+    }
+    default: {
+      return state;
+    }
+  }
+};
+
+const path = (state = "", action) => {
+  switch (action.type) {
+    case actionTypes.SET_PATH: {
+      return action.payload
+    }
     default: {
       return state;
     }
@@ -352,6 +380,8 @@ const serversById = (state = {}, action) => {
 const ui = combineReducers({
   repo,
   gitref,
+  files,
+  path,
   source,
   showPanel,
   currentServerId,
