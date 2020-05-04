@@ -59,14 +59,18 @@ class FilesListing extends React.Component {
   }
 
   handleClick = (e) => {
+    const { gitref, repo, path, setPath, fetchSource } = this.props;
+    let filetype = e.target.id;
+    let fileName = e.target.innerText;
+    if (filetype == "dir") setPath(path + "/" + e.target.innerText);
+    if (filetype == "file") fetchSource({ gitref, repo, path, fileName });
+  };
 
-    const { gitref, repo, path ,setPath , fetchSource} = this.props;
-    let filetype = e.target.id
-    let fileName = e.target.innerText
-    if(filetype == "dir")
-      setPath(path +"/"+ e.target.innerText)
-    if(filetype == "file")
-      fetchSource({ gitref, repo, path ,fileName})
+  handleBackClick = (e) => {
+    const { path, setPath} = this.props;
+    let end = path.lastIndexOf("/")
+    let newPath = path.substring(0, end)
+    setPath(newPath);
   };
 
   componentDidMount() {
@@ -90,6 +94,11 @@ class FilesListing extends React.Component {
       <FilesListingDiv>
         <div className="tag">Explorer</div>
         <ul>
+          {this.props.path && (
+            <li key={generate()} onClick={this.handleBackClick}>
+              ...
+            </li>
+          )}
           {this.props.files.map((file) => (
             <li key={generate()} id={file.type} onClick={this.handleClick}>
               <span className="icon">
@@ -116,7 +125,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = {
   fetchFiles: actions.fetchFiles,
-  fetchSource:actions.fetchSource,
+  fetchSource: actions.fetchSource,
   setPath: actions.setPath,
 };
 
