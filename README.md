@@ -1,7 +1,7 @@
 # nteract Play
 <p>
 <img align= "left" src="https://avatars0.githubusercontent.com/u/12401040?s=200&v=4" width="160">
-Play with nteract. No installation needed.
+[Play with nteract](https://play.nteract.io/). No installation needed.
 
 We developed nteract play to provide an interactive playground for users to run code samples against a [Binder](https://mybinder.org) instance. 
 
