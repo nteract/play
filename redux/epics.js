@@ -1,14 +1,16 @@
 import { combineEpics, ofType } from "redux-observable";
 import { of, from, merge } from "rxjs";
-import { filter, catchError, mergeMap, switchMap } from "rxjs/operators";
+import { map,filter, catchError, mergeMap, switchMap } from "rxjs/operators";
 import { binder } from "rx-binder";
 import { kernels, shutdown, kernelspecs } from "rx-jupyter";
 import uuid from "uuid/v4";
 import { executeRequest, kernelInfoRequest } from "@nteract/messaging";
 import objectPath from "object-path";
+import { ajax } from "rxjs/ajax";
 
 import * as actions from "./actions";
 import * as actionTypes from "./actionTypes";
+var base64 = require("js-base64").Base64;
 
 const activateServerEpic = action$ =>
   action$.pipe(
@@ -244,6 +246,34 @@ const runSourceEpic = (action$, state$) =>
     })
   );
 
+const fetchFilesEpic = (action$, state$) =>
+  action$.pipe(
+    ofType(actionTypes.FETCH_FILES),
+    mergeMap(({ payload: { repo, gitref, path } }) => {
+      const endpoint = `https://api.github.com/repos/${repo}/contents/${path}?ref=${gitref}`;
+      return ajax(endpoint).pipe(
+        map((res) => {
+          console.table(res.response);
+          return actions.fetchFilesFulfilled(res.response);
+        }),
+      );
+    })
+  );
+
+const fetchSourceEpic = (action$, state$) =>
+  action$.pipe(
+    ofType(actionTypes.FETCH_SOURCE),
+    mergeMap(({ payload: { repo, gitref, path, fileName } }) => {
+      const endpoint = `https://api.github.com/repos/${repo}/contents/${path}/${fileName}?ref=${gitref}`;
+      return ajax(endpoint).pipe(
+        map((res) => {
+          //TODO: Add file rendering in nteract/web for different file types
+          return actions.setSource(base64.decode(res.response.content));
+        }),
+      );
+    })
+  );
+
 // $FlowFixMe
 const epics = combineEpics(
   activateServerEpic,
@@ -253,7 +283,9 @@ const epics = combineEpics(
   activateKernelEpic,
   initializeKernelMessaging,
   extractCodeMirrorModeEpic,
-  runSourceEpic
+  runSourceEpic,
+  fetchFilesEpic,
+  fetchSourceEpic
 );
 
 export default epics;

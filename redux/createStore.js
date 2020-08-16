@@ -14,6 +14,8 @@ type State = {
     repo: string,
     gitref: string,
     source: string,
+    path: string,
+    files:array of objects,
     showPanel: boolean,
     currentServerId: string,
     currentKernelName: string,
