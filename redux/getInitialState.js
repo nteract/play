@@ -14,7 +14,7 @@ def fancy(word):
     ]
 
 
-div(h1('Welcome to ', fancy('play'), '!'),
+div(h1('Welcome to ', *fancy('play'), '!'),
     p('Run Python code via Binder & Jupyter'),
     img(src="https://bit.ly/storybot-vdom"),
     p('Change the code, click ',
